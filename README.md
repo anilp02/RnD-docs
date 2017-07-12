@@ -1,2 +1,2 @@
 # RnD-docs
-This repo contains all POC and R&amp;D documents
+This repo contains all POC and R&D documents

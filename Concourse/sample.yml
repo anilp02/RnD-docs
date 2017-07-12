@@ -9,20 +9,20 @@ resources:
 - name: sourceCode
   type: git
   source:
-    uri: https://padarabinda:Password%40123@bitbucket.org/wdnteam/bt-lhub-profile.git
-    branch: master
-    username: padarabinda.panigrahi@rci.com
-    password: Password@123
-    project: BlueThread
-    repository: bt-lhub-profile
+    uri: <bitBucket.git>
+    branch: 
+    username: 
+    password: 
+    project: 
+    repository: 
 - name: AppDeploy
   type: cf
   source:
-    api: https://api.run.pivotal.io
-    username: Purushothaman.CuppamSrinivasan@cognizant.com
-    password: Superindia@123
-    organization: WyndhamDestinationNetwork
-    space: LoyaltyHub-Dev
+    api: 
+    username: 
+    password: 
+    organization: 
+    space: 
     skip_cert_check: false
 - name: notification
   type: email
@@ -33,7 +33,7 @@ resources:
       username: wydnpipeline@gmail.com
       password: wydn_pipeline
     from: wydnpipeline@gmail.com
-    to: ["padarabinda.panigrahi@cognizant.com"]
+    to: ["email","email"]
 
 jobs:
 - name: buildAndDeploy
@@ -66,7 +66,7 @@ jobs:
           cd sourceCode
           # mvn clean install -e -DskipTests=true
           mvn clean install -e -DskipTests=false
-          mvn sonar:sonar -Dsonar.host.url=http://ec2-54-255-199-142.ap-southeast-1.compute.amazonaws.com:9000/
+          mvn sonar:sonar -Dsonar.host.url=<host url with port>
           # mvn clean install -e sonar:sonar -Dsonar.host.url=http://ec2-54-255-199-142.ap-southeast-1.compute.amazonaws.com:9000/
           # mvn clean install -e -Dhttp.proxyHost=proxy.cognizant.com -Dhttp.proxyPort=6050 -Dhttps.proxyHost=proxy.cognizant.com -Dhttps.proxyPort=6050
           pwd

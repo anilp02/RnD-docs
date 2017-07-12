@@ -1,0 +1,189 @@
+---
+resource_types:
+- name: email
+  type: docker-image
+  source:
+    repository: pcfseceng/email-resource
+
+resources:
+- name: sourceCode
+  type: git
+  source:
+    uri: https://padarabinda:Password%40123@bitbucket.org/wdnteam/bt-lhub-profile.git
+    branch: master
+    username: padarabinda.panigrahi@rci.com
+    password: Password@123
+    project: BlueThread
+    repository: bt-lhub-profile
+- name: AppDeploy
+  type: cf
+  source:
+    api: https://api.run.pivotal.io
+    username: Purushothaman.CuppamSrinivasan@cognizant.com
+    password: Superindia@123
+    organization: WyndhamDestinationNetwork
+    space: LoyaltyHub-Dev
+    skip_cert_check: false
+- name: notification
+  type: email
+  source:
+    smtp:
+      host: smtp.gmail.com
+      port: "587"
+      username: wydnpipeline@gmail.com
+      password: wydn_pipeline
+    from: wydnpipeline@gmail.com
+    to: ["WyndhamBlueThread@cognizant.com"]
+- name: scheduleBuild
+  type: time
+  source:
+    start: 06:00 PM
+    stop: 06:15 PM
+    location: Asia/Kolkata
+
+jobs:
+- name: buildAndDeploy
+  # Avoid parallel jobs
+  serial: true
+  plan:
+  - get: scheduleBuild
+    trigger: true
+  - get: sourceCode
+    # trigger: true
+    # version: latest
+  - task: build
+    config:
+      platform: linux
+      inputs:
+      - name: sourceCode
+      outputs:
+      - name: jarFile
+      image_resource:
+        type: docker-image
+        source: 
+          repository: maven
+          tag: latest
+      run:
+        path: sh
+        args:
+        - -exc
+        - |
+          export TERM=dumb
+          pwd
+          ls -lart
+          cd sourceCode
+          # mvn clean install -e -DskipTests=true
+          mvn clean install -e -DskipTests=false
+          mvn sonar:sonar -Dsonar.host.url=http://ec2-54-255-199-142.ap-southeast-1.compute.amazonaws.com:9000/
+          pwd
+          ls -lart
+          cd target
+          ls -lart
+          mv *.jar ../../jarFile/*.jar
+          cd ../../jarFile
+          ls -lart
+    on_success:
+      do:
+      - task: email-content
+        config:
+          platform: linux
+          inputs:
+          - name: sourceCode
+          outputs:
+          - name: email-content
+          image_resource:
+            type: docker-image
+            source: { repository: pallet/git-client }
+          run:
+            path: sh
+            args:
+            - -exc
+            - |
+              LAST_COMMIT_HASH=$(cd sourceCode && git log -1 | grep commit | cut -d' ' -f2)
+              LAST_COMMIT_DETAILS=$(cd sourceCode && git log -1 --name-status)
+              echo "Build Successful ${LAST_COMMIT_HASH}" >> email-content/subject.txt
+              echo "Build Successful\n\n ${LAST_COMMIT_DETAILS}" >> email-content/body.txt
+      - put: notification
+        params:
+          subject: email-content/subject.txt
+          body: email-content/body.txt
+    on_failure:
+      do:
+      - task: email-content
+        config:
+          platform: linux
+          inputs:
+          - name: sourceCode
+          outputs:
+          - name: email-content
+          image_resource:
+            type: docker-image
+            source: { repository: pallet/git-client }
+          run:
+            path: sh
+            args:
+            - -exc
+            - |
+              LAST_COMMIT_HASH=$(cd sourceCode && git log -1 | grep commit | cut -d' ' -f2)
+              LAST_COMMIT_DETAILS=$(cd sourceCode && git log -1 --name-status)
+              echo "Build FAILED ${LAST_COMMIT_HASH}" >> email-content/subject.txt
+              echo "Build FAILED\n\n ${LAST_COMMIT_DETAILS}" >> email-content/body.txt
+      - put: notification
+        params:
+          subject: email-content/subject.txt
+          body: email-content/body.txt
+  - put: AppDeploy
+    params:
+      manifest: sourceCode/manifest.yml
+      path: jarFile/*.jar
+    on_success:
+      do:
+      - task: email-content
+        config:
+          platform: linux
+          inputs:
+          - name: sourceCode
+          outputs:
+          - name: email-content
+          image_resource:
+            type: docker-image
+            source: { repository: pallet/git-client }
+          run:
+            path: sh
+            args:
+            - -exc
+            - |
+              LAST_COMMIT_HASH=$(cd sourceCode && git log -1 | grep commit | cut -d' ' -f2)
+              LAST_COMMIT_DETAILS=$(cd sourceCode && git log -1 --name-status)
+              echo "Deploy Successful ${LAST_COMMIT_HASH}" >> email-content/subject.txt
+              echo "Deploy Successful\n\n ${LAST_COMMIT_DETAILS}" >> email-content/body.txt
+      - put: notification
+        params:
+          subject: email-content/subject.txt
+          body: email-content/body.txt
+    on_failure:
+      do:
+      - task: email-content
+        config:
+          platform: linux
+          inputs:
+          - name: sourceCode
+          outputs:
+          - name: email-content
+          image_resource:
+            type: docker-image
+            source: { repository: pallet/git-client }
+          run:
+            path: sh
+            args:
+            - -exc
+            - |
+              LAST_COMMIT_HASH=$(cd sourceCode && git log -1 | grep commit | cut -d' ' -f2)
+              LAST_COMMIT_DETAILS=$(cd sourceCode && git log -1 --name-status)
+              echo "Deploy FAILED ${LAST_COMMIT_HASH}" >> email-content/subject.txt
+              echo "Deploy FAILED\n\n ${LAST_COMMIT_DETAILS}" >> email-content/body.txt
+      - put: notification
+        params:
+          subject: email-content/subject.txt
+          body: email-content/body.txt
+                

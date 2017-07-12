@@ -1,0 +1,64 @@
+resources:
+  - name: rr_git
+    type: git
+    source:
+      uri: https://github.com/iamranga/myCapstoneProject.git
+      branch: master
+      username: iamranga
+      password: password123
+  - name: rr_s3_archive
+    type: s3
+    source:
+      bucket: s3bucketpoc
+      regexp: resource-app/resource-app-(.*).zip
+      access_key_id: AKIAJYEX553SPTFHOB7A
+      secret_access_key: 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
+      private: true
+      region_name: ap-southeast-1
+  - name: cf-deploy
+    type: cf
+    source:
+      api: https://api.system.dev.digifabricpcf.com
+      username: appuser1
+      password: password@123
+      organization: DEV
+      space: DevSpace
+      skip_cert_check: true
+
+jobs:
+  - name: build-rr
+    plan:
+      - get: rr_git
+        trigger: true
+      - task: build
+        file: rr_git/ci/build.yml
+      - put: rr_s3_archive
+        params:
+          file: resource-app/resource-app-*.zip
+  - name: deploy-rr
+    plan:
+      - get: rr_s3_archive
+        trigger: true
+        passed: [build-rr]
+      - task: unzip
+        config:
+          platform: linux
+          image_resource:
+            type: docker-image
+            source:
+              repository: java
+              tag: "8"
+          inputs:
+          - name: rr_s3_archive
+          outputs:
+          - name: unzipped-rr-s3
+          run:
+            path: "unzip"
+            args: 
+            - "rr_s3_archive/resource-app-0.1.zip"
+            - "-d"
+            - "unzipped-rr-s3"
+      - put: cf-deploy
+        params:
+          manifest: unzipped-rr-s3/manifest.yml
+          path: unzipped-rr-s3

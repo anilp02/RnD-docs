@@ -2,27 +2,27 @@ resources:
   - name: rr_git
     type: git
     source:
-      uri: https://github.com/iamranga/myCapstoneProject.git
-      branch: master
-      username: iamranga
-      password: password123
+      uri: 
+      branch: 
+      username: 
+      password: 
   - name: rr_s3_archive
     type: s3
     source:
-      bucket: s3bucketpoc
+      bucket: <bucket name>
       regexp: resource-app/resource-app-(.*).zip
-      access_key_id: AKIAJYEX553SPTFHOB7A
-      secret_access_key: 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
+      access_key_id: 
+      secret_access_key: 
       private: true
-      region_name: ap-southeast-1
+      region_name: 
   - name: cf-deploy
     type: cf
     source:
-      api: https://api.system.dev.digifabricpcf.com
-      username: appuser1
-      password: password@123
-      organization: DEV
-      space: DevSpace
+      api: 
+      username: 
+      password: 
+      organization: 
+      space: 
       skip_cert_check: true
 
 jobs:

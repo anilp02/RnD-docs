@@ -138,7 +138,7 @@
 					<schemaFiles>enrollmentService_1.wsdl</schemaFiles>
 				</configuration>
 			</plugin>
-			
+<!--*****************************************************************************************************************************************************************************-->			
 		<!-- Surefire plugin -->
 			<plugin>
 				<groupId>org.apache.maven.plugins</groupId>

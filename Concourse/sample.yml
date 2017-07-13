@@ -9,7 +9,7 @@ resources:
 - name: sourceCode
   type: git
   source:
-    uri: <bitBucket.git>
+    uri: <https://username:password@bitbucket.org/XXX.git>
     branch: 
     username: 
     password: 

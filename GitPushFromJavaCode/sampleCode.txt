@@ -47,7 +47,7 @@ import com.jcraft.jsch.Session;
  * Repository into destination directory by passing Git url, destination
  * directory and Git Credential.It also used for Pulling Git code and pushing to
  * different repository. Revision History : Version Date Author Reason 0.1
- * 09-Jun-2016 418618 Initial version
+ * 09-Jun-2016 540010 Initial version
  */
 
 @Component

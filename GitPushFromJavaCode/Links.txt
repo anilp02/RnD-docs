@@ -1,0 +1,3 @@
+http://www.codeaffine.com/2014/12/09/jgit-authentication/
+
+http://www.programcreek.com/java-api-examples/index.php?api=org.eclipse.jgit.transport.JschConfigSessionFactory

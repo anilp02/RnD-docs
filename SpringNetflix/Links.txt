@@ -1,0 +1,15 @@
+http://cloud.spring.io/spring-cloud-netflix/spring-cloud-netflix.html
+
+https://docs.pivotal.io/spring-cloud-services/1-4/common/
+
+https://spring.io/blog/2015/07/14/microservices-with-spring
+
+https://github.com/Netflix/Hystrix/wiki
+
+https://stackoverflow.com/questions/31211685/configuring-hystrix-command-properties-using-application-yaml-in-spring-boot-app
+
+https://stackoverflow.com/questions/35085617/how-to-configure-hystrix-annotations-from-property-file
+
+https://github.com/Netflix
+
+https://github.com/Netflix/archaius/wiki/Getting-Started

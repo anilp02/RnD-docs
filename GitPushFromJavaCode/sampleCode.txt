@@ -1,0 +1,326 @@
+package com.cognizant.deployprocessor.git;
+
+import java.io.File;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Iterator;
+import java.util.List;
+
+import javax.annotation.PostConstruct;
+
+import org.apache.commons.io.FileDeleteStrategy;
+import org.apache.commons.io.FileUtils;
+import org.eclipse.jgit.api.AddCommand;
+import org.eclipse.jgit.api.CloneCommand;
+import org.eclipse.jgit.api.CommitCommand;
+import org.eclipse.jgit.api.Git;
+import org.eclipse.jgit.api.PullCommand;
+import org.eclipse.jgit.api.PushCommand;
+import org.eclipse.jgit.api.TransportConfigCallback;
+import org.eclipse.jgit.internal.storage.file.FileRepository;
+import org.eclipse.jgit.transport.JschConfigSessionFactory;
+import org.eclipse.jgit.transport.OpenSshConfig;
+import org.eclipse.jgit.transport.PushResult;
+import org.eclipse.jgit.transport.SshSessionFactory;
+import org.eclipse.jgit.transport.SshTransport;
+import org.eclipse.jgit.transport.Transport;
+import org.eclipse.jgit.transport.UsernamePasswordCredentialsProvider;
+import org.eclipse.jgit.util.FS;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.stereotype.Component;
+
+import com.cognizant.deployprocessor.error.CustomErrorMessage;
+import com.cognizant.deployprocessor.error.DeployProcessorStatusMessages;
+import com.cognizant.deployprocessor.exception.DeployProcessorException;
+import com.cognizant.deployprocessor.logger.ILogger;
+import com.cognizant.deployprocessor.logger.LoggerFactory;
+import com.cognizant.deployprocessor.utils.PropertyFileReader;
+import com.cognizant.deployprocessor.utils.SSLUtilities;
+import com.cognizant.deployprocessor.utils.Util;
+import com.jcraft.jsch.JSch;
+import com.jcraft.jsch.JSchException;
+import com.jcraft.jsch.Session;
+
+/**
+ * File : GitHandler.java Description : This class is used to clone Git
+ * Repository into destination directory by passing Git url, destination
+ * directory and Git Credential.It also used for Pulling Git code and pushing to
+ * different repository. Revision History : Version Date Author Reason 0.1
+ * 09-Jun-2016 418618 Initial version
+ */
+
+@Component
+public class GitHandler {
+
+	private ILogger logger;
+
+	@Autowired
+	private LoggerFactory loggerFactory;
+
+	@Autowired
+	private PropertyFileReader propertyFileReader;
+
+	@PostConstruct
+	public void loadLogger() {
+		logger = loggerFactory.getLoggerInstance();
+	}
+
+	@Autowired
+	private Util util;
+
+	private Git git;
+
+	private final String TEMP_GIT_UPLOAD_DIR = "tempGitUploadDir";
+
+	/**
+	 * Description: Cloning Git Repository to destination Directory by passing
+	 * Git Url,Destination Directory and Git credential.
+	 * 
+	 * @param jgitUrl
+	 * @param destinationDirectory
+	 */
+	public void cloneRepo(String jgitUrl, File destinationDir, String userName, String password, String branch)
+			throws DeployProcessorException {
+
+		try {
+			SSLUtilities.disableSSLCertificateChecking();
+			Git.cloneRepository().setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password))
+					.setDirectory(destinationDir).setURI(jgitUrl).setBranch(branch).call().close();
+
+		}
+
+		catch (Exception e) {
+			List<String> errorList = new ArrayList<>();
+			errorList.add(e.getMessage());
+			throw util.deployProcessorException(CustomErrorMessage.INTERNAL_SERVER_ERROR, errorList);
+		}
+
+	}
+
+	/**
+	 * Description :Pushing Git code to Destination path.It uses Git Clone,Git
+	 * Add,Git Commit and Push.
+	 * 
+	 * @param appname
+	 * @param userName
+	 * @param password
+	 * @param gitUrl
+	 * @param dir
+	 * @param commit_user
+	 */
+	public void gitPush(String userName, String password, String openSsh, String url, File dir, String commitUser)
+			throws DeployProcessorException {
+
+		File tempGitUploadDir = new File(dir.getParent() + File.separator + TEMP_GIT_UPLOAD_DIR);
+
+		Git git = null;
+		try {
+			// clone
+			CloneCommand cloneCommand = new CloneCommand();
+			cloneCommand.setDirectory(tempGitUploadDir);
+			cloneCommand.setURI(url);
+			if (null != openSsh) {
+				cloneCommand.setTransportConfigCallback(getTransportConfigCallback(openSsh, password));
+			} else {
+				cloneCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password));
+			}
+			git = cloneCommand.call();
+			File destWhereCodeShouldGo = new File(tempGitUploadDir.getAbsolutePath() + File.separator + dir.getName());
+			FileUtils.copyDirectory(dir, destWhereCodeShouldGo);
+
+			AddCommand addCommand = git.add();
+			addCommand.addFilepattern(".");
+			addCommand.call();
+
+			// commit
+			CommitCommand commit = git.commit();
+			commit.setCommitter(userName, commitUser).setMessage("Initial check-in for Reference Template code");
+			commit.call();
+
+			// push
+			PushCommand pushCommand = git.push();
+			if (null != openSsh) {
+				pushCommand.setTransportConfigCallback(getTransportConfigCallback(openSsh, password));
+			} else {
+				pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password));
+			}
+			pushCommand.setForce(true);
+			pushCommand.setPushAll();
+
+			Iterator<PushResult> it = pushCommand.call().iterator();
+			if (it.hasNext()) {
+				logger.info("Application is pushed to the provided users repository");
+			}
+		} catch (Exception e) {
+			List<String> errorList = new ArrayList<String>();
+			errorList.add(e.getMessage());
+			throw new DeployProcessorException(DeployProcessorStatusMessages.GIT_SERVICE_ERROR.getMsgCode(),
+					propertyFileReader.getMessage(DeployProcessorStatusMessages.GIT_SERVICE_ERROR.getMessage(),
+							errorList.toArray()),
+					HttpStatus.INTERNAL_SERVER_ERROR.value());
+		} finally {
+			if (git != null)
+				git.close();
+			try {
+				FileDeleteStrategy.FORCE.delete(tempGitUploadDir);
+			} catch (IOException e) {
+				List<String> values = new ArrayList<String>();
+				values.add(e.getMessage());
+				throw util.deployProcessorException(CustomErrorMessage.INTERNAL_SERVER_ERROR, values);
+			}
+		}
+
+	}
+
+	/**
+	 * Method to overwrite the Configure identity object with user's openSSH
+	 * 
+	 * @param openSsh
+	 * @param password
+	 * @return
+	 */
+	private TransportConfigCallback getTransportConfigCallback(String openSsh, String password) {
+
+		return new TransportConfigCallback() {
+
+			@Override
+			public void configure(Transport transport) {
+				SshTransport sshTransport = (SshTransport) transport;
+				sshTransport.setSshSessionFactory(gitAuthenticate(openSsh, password));
+			}
+		};
+	}
+
+	/**
+	 * Method to overwrite the Jsch identity object with user's openSSH
+	 * 
+	 * @param openSsh
+	 * @param password
+	 * @return
+	 */
+	private SshSessionFactory gitAuthenticate(String openSsh, String password) {
+		SshSessionFactory sshSessionFactory = new JschConfigSessionFactory() {
+
+			@Override
+			protected void configure(final OpenSshConfig.Host hc, Session session) {
+				session.setConfig("StrictHostKeyChecking", "no");
+			}
+
+			@Override
+			protected JSch createDefaultJSch(FS fs) throws JSchException {
+				JSch jsch = super.createDefaultJSch(fs);
+				jsch.removeAllIdentity();
+				jsch.addIdentity(openSsh, password);
+				return jsch;
+			}
+		};
+		return sshSessionFactory;
+	}
+
+	/**
+	 * Description :Pushing Git code to Destination path for Azure.It uses Git
+	 * Clone,Git Add,Git Commit and Push.
+	 * 
+	 * @param appname
+	 * @param userName
+	 * @param password
+	 * @param gitUrl
+	 * @param dir
+	 * @param commit_user
+	 */
+	public void azureGitPush(String userName, String password, String url, File dir, String commitUser)
+			throws DeployProcessorException {
+
+		File tempGitUploadDir = new File(dir.getParent() + File.separator + TEMP_GIT_UPLOAD_DIR);
+		Git git = null;
+		try {
+			CloneCommand cloneCommand = new CloneCommand()
+					.setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password))
+					.setDirectory(tempGitUploadDir).setURI(url);
+			git = cloneCommand.call();
+			File destWhereCodeShouldGo = new File(tempGitUploadDir.getAbsolutePath() + File.separator);
+			FileUtils.copyDirectory(dir, destWhereCodeShouldGo);
+
+			AddCommand addCommand = git.add();
+			addCommand.addFilepattern(".");
+
+			addCommand.call();
+
+			// commit
+			CommitCommand commit = git.commit();
+			commit.setCommitter(userName, commitUser).setMessage("Initial check-in for Reference Template code");
+
+			commit.call();
+
+			// push
+
+			PushCommand pushCommand = git.push();
+			pushCommand.setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password))
+					.setForce(true).setPushAll();
+
+			Iterator<PushResult> it = pushCommand.call().iterator();
+			if (it.hasNext()) {
+				logger.info("Application is pushed to the provided users repository");
+			}
+			FileDeleteStrategy.FORCE.delete(tempGitUploadDir);
+		} catch (Exception e) {
+			List<String> errorList = new ArrayList<String>();
+			errorList.add(e.getMessage());
+			throw new DeployProcessorException(DeployProcessorStatusMessages.GIT_SERVICE_ERROR.getMsgCode(),
+					propertyFileReader.getMessage(DeployProcessorStatusMessages.GIT_SERVICE_ERROR.getMessage(),
+							errorList.toArray()),
+					HttpStatus.INTERNAL_SERVER_ERROR.value());
+		} finally {
+			if (git != null) {
+				git.close();
+			}
+			// tempGitUploadDir.delete();
+
+		}
+
+	}
+
+	/**
+	 * Description:Pull the latest Changes in pulled Repository Directory.
+	 * 
+	 * @param pulledRepository
+	 * @param userName
+	 * @param password
+	 */
+	public void gitPull(final File pulledRepository, final String userName, final String password)
+			throws DeployProcessorException {
+
+		String localPath;
+
+		FileRepository localRepo = null;
+
+		localPath = pulledRepository.getAbsolutePath();
+
+		try {
+			localRepo = new FileRepository(localPath + "/.git");
+		} catch (IOException e) {
+			logger.error("Error performing Git pull operation. Caught under superclass exception");
+		}
+
+		git = new Git(localRepo);
+
+		final PullCommand pullCmd = git.pull();
+		try {
+
+			pullCmd.setCredentialsProvider(new UsernamePasswordCredentialsProvider(userName, password));
+			pullCmd.call();
+
+		}
+
+		catch (Exception e) {
+			List<String> errorList = new ArrayList<String>();
+			errorList.add(e.getMessage());
+			throw util.deployProcessorException(CustomErrorMessage.INTERNAL_SERVER_ERROR, errorList);
+		} finally {
+			git.close();
+		}
+
+	}
+
+}

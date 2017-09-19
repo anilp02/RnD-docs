@@ -1,0 +1,13 @@
+https://spring.io/guides/tutorials/spring-boot-oauth2/
+
+https://auth0.com/blog/securing-spring-boot-with-jwts/
+
+https://auth0.com/blog/implementing-jwt-authentication-on-spring-boot/
+
+http://javasampleapproach.com/java-integration/use-springmvc-handlerinterceptor-spring-boot
+
+https://stormpath.com/blog/jwt-java-create-verify
+
+https://stormpath.com/blog/service-to-service
+
+https://auth0.com/docs/jwt

@@ -1,0 +1,682 @@
+<!DOCTYPE html>
+<!-- saved from url=(0077)https://cognizant-pal-v1.cfapps.io/spring-boot-developer/messaging/index.html -->
+<html lang="en"><head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="course version" content="1.5.3">
+<meta name="generator" content="io.pivotal.pal.shipkin:shipkin-plugin:1.0.0, https://github.com/platform-acceleration-lab/shipkin">
+<meta name="generated on" content="2017-08-07T20:05:55.183Z">
+
+
+
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<title>Cumulus Education Lab - Messaging</title>
+
+<link rel="icon" href="https://cognizant-pal-v1.cfapps.io/images/cognizant_favicon.ico">
+
+<link rel="stylesheet" href="./Cumulus Education Lab - Messaging_files/components.css">
+<link rel="stylesheet" href="./Cumulus Education Lab - Messaging_files/highlight.js.min.css">
+<link rel="stylesheet" href="./Cumulus Education Lab - Messaging_files/github.css">
+<link rel="stylesheet" href="./Cumulus Education Lab - Messaging_files/custom.css">
+
+<style>
+        #header {
+            border-color: rgb(49, 178, 93)
+        }
+        #header.background-image {
+            background-color: rgba(53, 122, 145, 0.75);
+        }
+
+        footer {
+            background-color: #4298b5;
+        }
+
+        .label.label-primary {
+            background-color: #4298b5;
+        }
+
+        a {
+            color: #4298b5;
+        }
+
+        .label.label-primary:hover, .label.label-primary:focus {
+            background-color: #357a91;
+        }
+
+        a:hover, a:focus {
+            color: #357a91;
+        }
+</style>
+
+</head>
+<body role="document">
+
+<main role="main">
+
+<style>
+    #header.background-image:after {
+        background-image: url(../../images/boardroom.jpg);
+    }
+</style>
+<header id="header" class="pane background-image">
+
+
+    <div class="container">
+        <div class="row">
+                <img src="./Cumulus Education Lab - Messaging_files/cognizant.svg" alt="Cumulus Education Lab logo">
+
+            <div>
+                <a href="https://cognizant-pal-v1.cfapps.io/">
+                    <h1 class="type-neutral-11 em-max">Cumulus Education Lab</h1>
+
+                    <h2 class="type-neutral-11 em-high">Messaging</h2>
+                </a>
+
+            </div>
+        </div>
+    </div>
+</header>
+
+    <div class="container">
+        <div class="row">
+            <div class="col-sm-18 doc-main">
+ <h1 id="requirements">Requirements</h1>
+<p><a href="https://cognizant-pal-v1.cfapps.io/spring-boot-developer/requirements">Lab Requirements</a></p>
+<h1 id="purpose-of-this-lab">Purpose of this lab</h1>
+<ul>
+<li>How to install RabbitMQ</li>
+<li>Get familiar with Spring Boot and Spring AMQP development.</li>
+<li>Use Message serialization to convert to/from Objects.</li>
+<li>Estimated time: 40 minutes</li>
+</ul>
+<h1 id="install-rabbitmq">Install RabbitMQ</h1>
+<ol>
+<li>Download RabbitMQ
+<ul>
+<li>
+<p><strong>For Mac Users</strong>: you can use <a href="http://brew.sh/">Homebrew</a>
+and execute:</p>
+<pre class=" language-bash"><code class="language-bash hljs">brew <span class="token function">install</span> rabbitmq
+</code></pre>
+<p>Read the Run RabbitMQ Server section <a href="https://www.rabbitmq.com/install-homebrew.html">here</a>
+to get your server up and running.</p>
+</li>
+<li>
+<p><strong>For Windows Users</strong>: you can download it from the
+<a href="http://www.rabbitmq.com/download.html">RabbitMQ Website</a>.</p>
+</li>
+</ul>
+</li>
+<li>You can run the rabbitmq by executing: <code>rabbitmq-server</code></li>
+<li>Open a Browser and go to: <a href="http://localhost:15672/">http://localhost:15672</a>.
+The credentials are: <strong>guest</strong>/<strong>guest</strong></li>
+</ol>
+<p><img src="./Cumulus Education Lab - Messaging_files/07_04_messaging.png" alt=""></p>
+<blockquote>
+<p>If your server does not start navigate to the <a href="https://www.rabbitmq.com/download.html">RabbitMQ</a>
+downloads page and follow the link for your operating system to
+troubleshoot.
+If your management interface is not working troubleshoot <a href="https://www.rabbitmq.com/management.html">here</a>.</p>
+</blockquote>
+<blockquote>
+<p>You have installed RabbitMQ.</p>
+</blockquote>
+<h1 id="create-a-consumer-and-producer-application-that-use-rabbitmq">Create a Consumer and Producer application that use RabbitMQ</h1>
+<p>Make sure you have RabbitMQ up and running.</p>
+<p><strong>PART 1 - Consumer</strong></p>
+<p>Project Information:</p>
+<ul>
+<li><strong>Group</strong>: <code>io.pivotal.workshop</code></li>
+<li><strong>ArtifactId</strong>: <code>simple-rpc-consumer-rabbit</code></li>
+<li><strong>Dependencies</strong>: <code>amqp</code></li>
+</ul>
+<ol>
+<li>
+<p>Create the project using the <a href="http://start.spring.io/">Spring Initializr</a>
+or IntelliJ (<strong><em>File → New → Spring Starter Project</em></strong>).</p>
+</li>
+<li>
+<p>Notice the <strong>Spring Boot Starters</strong> added to the <strong><em>build.gradle</em></strong> file:</p>
+<ul>
+<li><strong><em>spring-boot-starter-amqp</em></strong></li>
+</ul>
+<pre><code class="language-groovy hljs">compile <span class="hljs-string">"org.springframework.boot:spring-boot-starter-amqp"</span>
+</code></pre>
+</li>
+<li>
+<p>Modify the main application class,
+<strong><em>SimpleRpcConsumerRabbitApplication.java</em></strong>, to receive messages and
+print them to the terminal.</p>
+<ul>
+<li>Create a method annotated with the <a href="http://docs.spring.io/autorepo/docs/spring-amqp-dist/1.4.1.RELEASE/api/org/springframework/amqp/rabbit/annotation/RabbitListener.html">@RabbitListener</a>
+that prints out the message from the <strong>spring-boot</strong> Queue.</li>
+<li>Create a <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html">@Bean</a>
+annotated method that returns a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/core/Queue.html">Queue</a>
+that is named <strong>spring-boot</strong> and has the durability set to <code>false</code>.</li>
+</ul>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>core<span class="token punctuation">.</span>Queue<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>RabbitListener<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>SpringApplication<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>autoconfigure<span class="token punctuation">.</span>SpringBootApplication<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>context<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Bean<span class="token punctuation">;</span>
+
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">SimpleRpcConsumerRabbitApplication</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">static</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">main</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">String</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">[</span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">]</span></span></span><span class="hljs-function"><span class="hljs-params"> args</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        SpringApplication<span class="token punctuation">.</span><span class="token function">run<span class="token punctuation">(</span></span>SimpleRpcConsumerRabbitApplication<span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span> args<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@</span><span class="token function"><span class="hljs-meta">RabbitListener</span><span class="token punctuation">(</span></span>queues <span class="token operator">=</span> <span class="token string"><span class="hljs-string">"spring-boot"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">process</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">String message</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println<span class="token punctuation">(</span></span><span class="token string"><span class="hljs-string">"&gt;&gt;&gt; "</span></span> <span class="token operator">+</span> message<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> Queue </span><span class="token function"><span class="hljs-function"><span class="hljs-title">queue</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Queue</span><span class="token punctuation">(</span><span class="token string"><span class="hljs-string">"spring-boot"</span></span><span class="token punctuation">,</span> <span class="token boolean"><span class="hljs-keyword">false</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p>Run the application to make sure everything compiles: <code>./gradlew bootRun</code>.</p>
+</li>
+<li>
+<p>Stop the application.</p>
+</li>
+</ol>
+<p><strong>PART 2 - PRODUCER</strong></p>
+<p>Project Information:</p>
+<ul>
+<li><strong>Group</strong>: <code>io.pivotal.workshop</code></li>
+<li><strong>ArtifactId</strong>: <code>simple-rpc-producer-rabbit</code></li>
+<li><strong>Dependencies</strong>: <code>amqp</code></li>
+</ul>
+<ol>
+<li>
+<p>Create the project using the <a href="http://start.spring.io/">Spring Initializr</a>
+or IntelliJ (<strong><em>File → New → Spring Starter Project</em></strong>).</p>
+</li>
+<li>
+<p>Modify the main application class,
+<strong><em>SimpleRpcProducerRabbitApplication.java</em></strong>, to send a time stamped
+message every second.</p>
+<ul>
+<li>Create an <a href="http://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html">@Autowired</a>
+constructor that takes a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/core/RabbitTemplate.html"><strong>RabbitTemplate</strong></a>
+and stores it into an instance field.</li>
+<li>Use the <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html">@Scheduled</a>
+annotation to call a method that sends the message <em><strong>Hello World</strong></em>
+to the <code>spring-boot</code> queue every second using the RabbitTemplate.</li>
+<li>Attach a timestamp to the message that is formatted for hours,
+minutes, and seconds.</li>
+<li>Annotate the application with <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableScheduling.html">@EnableScheduling</a>
+to allow your schedule to run.</li>
+<li>Create a <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html">@Bean</a>
+annotated method that returns a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/core/Queue.html">Queue</a>
+that is named <strong>spring-boot</strong> and has the durability set to <code>false</code>.</li>
+</ul>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>core<span class="token punctuation">.</span>Queue<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>core<span class="token punctuation">.</span>RabbitTemplate<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>beans<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Autowired<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>SpringApplication<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>autoconfigure<span class="token punctuation">.</span>SpringBootApplication<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>context<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Bean<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>scheduling<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>EnableScheduling<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>scheduling<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Scheduled<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> java<span class="token punctuation">.</span>text<span class="token punctuation">.</span>SimpleDateFormat<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>Date<span class="token punctuation">;</span>
+
+<span class="hljs-meta">@EnableScheduling</span>
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">SimpleRpcProducerRabbitApplication</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> <span class="token keyword"><span class="hljs-keyword">final</span></span> RabbitTemplate template<span class="token punctuation">;</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">static</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">main</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">String</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">[</span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">]</span></span></span><span class="hljs-function"><span class="hljs-params"> args</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        SpringApplication<span class="token punctuation">.</span><span class="token function">run<span class="token punctuation">(</span></span>SimpleRpcProducerRabbitApplication<span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span> args<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">SimpleRpcProducerRabbitApplication</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">RabbitTemplate template</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>template <span class="token operator">=</span> template<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@</span><span class="token function"><span class="hljs-meta">Scheduled</span><span class="token punctuation">(</span></span>fixedRate <span class="token operator">=</span> <span class="token number"><span class="hljs-number">1000</span></span><span class="token punctuation">)</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">sendMessage</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        String timestamp <span class="token operator">=</span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">SimpleDateFormat</span><span class="token punctuation">(</span><span class="token string"><span class="hljs-string">"HH:mm:ss"</span></span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">format<span class="token punctuation">(</span></span><span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Date</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        String message <span class="token operator">=</span> <span class="token string"><span class="hljs-string">"Hello world! "</span></span> <span class="token operator">+</span> timestamp<span class="token punctuation">;</span>
+
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>template<span class="token punctuation">.</span><span class="token function">convertAndSend<span class="token punctuation">(</span></span><span class="token string"><span class="hljs-string">"spring-boot"</span></span><span class="token punctuation">,</span> message<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> Queue </span><span class="token function"><span class="hljs-function"><span class="hljs-title">queue</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Queue</span><span class="token punctuation">(</span><span class="token string"><span class="hljs-string">"spring-boot"</span></span><span class="token punctuation">,</span> <span class="token boolean"><span class="hljs-keyword">false</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+<blockquote>
+<p>Normally the consumer would be the only application in charge of
+creating this <code>Queue</code>.
+For educational purposes we have this @Bean in both the consumer and
+producer.</p>
+</blockquote>
+</li>
+<li>
+<p>Use the terminal and execute: <code>./gradlew bootRun</code></p>
+</li>
+<li>
+<p>Make sure the <code>spring-boot</code> queue is created in the RabbitMQ broker
+by going to the <a href="http://localhost:15672/#/queues">Web Console</a>.
+Refresh this page.
+Notice that messages are filling the queue on the <a href="http://localhost:15672/#/queues">Queues page</a>.</p>
+</li>
+<li>
+<p>Let's retrieve these messages.
+Start your consumer application by running <code>./gradlew bootRun</code></p>
+</li>
+<li>
+<p>Verify that the consumer is receiving the messages.
+Take a look at the consumer application logs and you will see the
+"<em>Hello World at XXXXX</em>" message every second.
+<img src="./Cumulus Education Lab - Messaging_files/07_06_messaging.png" alt=""></p>
+</li>
+<li>
+<p>What happened when you started the consumer application when the
+message queue contained messages?</p>
+</li>
+<li>
+<p>What is happening in the <a href="http://localhost:15672/#/queues">queue</a>
+now that the consumer and producer are both running?</p>
+</li>
+<li>
+<p>Stop the Consumer application again and watch the <a href="http://localhost:15672/#/queues">queue</a>.</p>
+</li>
+</ol>
+<blockquote>
+<p>You have created created a producer and consumer
+that utilize RabbitMQ for messaging.</p>
+</blockquote>
+<h1 id="create-a-consumer-and-producer-application-that-can-serialize-and-deserialize-messages">Create a Consumer and Producer application that can serialize and deserialize messages</h1>
+<p>Make sure you have RabbitMQ up and running.</p>
+<p><strong>PART 1 - Create a Snippet Consumer</strong></p>
+<p>Project Information:</p>
+<ul>
+<li><strong>Group</strong>: <code>io.pivotal.workshop</code></li>
+<li><strong>ArtifactId</strong>: <code>snippet-consumer</code></li>
+<li><strong>Dependencies</strong>: <code>amqp</code></li>
+</ul>
+<ol>
+<li>
+<p>Create the project using the <a href="http://start.spring.io/">Spring Initializr</a>
+or IntelliJ (<strong><em>File → New → Spring Starter Project</em></strong>).</p>
+</li>
+<li>
+<p>Create a new SnippetNotifier class
+(<strong><em>io.pivotal.workshop.domain.SnippetNotifier.java</em></strong>)</p>
+<ul>
+<li>This class should have fields for a String <strong>title</strong> and a Date
+<strong>created</strong>.</li>
+<li>This class should have getters for these fields.</li>
+</ul>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">.</span>domain<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>Date<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">SnippetNotifier</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> String title<span class="token punctuation">;</span>
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> Date created<span class="token punctuation">;</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">SnippetNotifier</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="token punctuation">{</span><span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> String </span><span class="token function"><span class="hljs-function"><span class="hljs-title">getTitle</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> title<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> Date </span><span class="token function"><span class="hljs-function"><span class="hljs-title">getCreated</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> created<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p>Create a new RabbitListenerConfig class (<strong><em>io.pivotal.workshop.config.RabbitListenerConfig.java</em></strong>)</p>
+<ul>
+<li>Annotate this class with <a href="http://docs.spring.io/spring-framework/docs/4.0.4.RELEASE/javadoc-api/org/springframework/context/annotation/Configuration.html"><strong>@Configuration</strong></a>.
+<ul>
+<li>Create an <a href="http://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html">@Autowired</a>
+constructor that takes a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/connection/ConnectionFactory.html"><strong>ConnectionFactory</strong></a>
+and stores it into an instance field.</li>
+</ul>
+</li>
+<li>Create a <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html">@Bean</a>
+annotated method that configures and returns <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/config/SimpleRabbitListenerContainerFactory.html"><strong>SimpleRabbitListenerContainerFactory</strong></a>.
+<ul>
+<li>Instantiate a <strong>new SimpleRabbitListenerContainerFactory</strong>
+named <strong>factory</strong>.</li>
+<li>Pass the <strong>connectionFactory</strong> we injected into our
+constructor to the <strong>factory.setConnectionFactory</strong> method.</li>
+<li>Pass a <strong>new Jackson2JsonMessageConverter</strong> to the
+<strong>factory.setMessageConverter</strong> method.</li>
+<li>Return the <strong>factory</strong> we have just configured.</li>
+</ul>
+</li>
+<li>Create a <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html">@Bean</a>
+annotated method that returns a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/core/Queue.html">Queue</a>
+that is named <strong>spring-boot</strong> and has the durability set to
+<code>false</code>.</li>
+</ul>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">.</span>config<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>core<span class="token punctuation">.</span>Queue<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>config<span class="token punctuation">.</span>SimpleRabbitListenerContainerFactory<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>connection<span class="token punctuation">.</span>ConnectionFactory<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>support<span class="token punctuation">.</span>converter<span class="token punctuation">.</span>Jackson2JsonMessageConverter<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>beans<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Autowired<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>context<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Bean<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>context<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Configuration<span class="token punctuation">;</span>
+
+<span class="hljs-meta">@Configuration</span>
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">RabbitListenerConfig</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> ConnectionFactory connectionFactory<span class="token punctuation">;</span>
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">RabbitListenerConfig</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">ConnectionFactory connectionFactory</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>connectionFactory <span class="token operator">=</span> connectionFactory<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> SimpleRabbitListenerContainerFactory </span><span class="token function"><span class="hljs-function"><span class="hljs-title">rabbitListenerContainerFactory</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        SimpleRabbitListenerContainerFactory factory <span class="token operator">=</span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">SimpleRabbitListenerContainerFactory</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        factory<span class="token punctuation">.</span><span class="token function">setConnectionFactory<span class="token punctuation">(</span></span><span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>connectionFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        factory<span class="token punctuation">.</span><span class="token function">setMessageConverter<span class="token punctuation">(</span></span><span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Jackson2JsonMessageConverter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> factory<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> Queue </span><span class="token function"><span class="hljs-function"><span class="hljs-title">queue</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Queue</span><span class="token punctuation">(</span><span class="token string"><span class="hljs-string">"spring-boot"</span></span><span class="token punctuation">,</span> <span class="token boolean"><span class="hljs-keyword">false</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p>Modify the main application class,
+<strong><em>SnippetConsumerApplication.java</em></strong>, to deserialize the json message
+from a SnippetNotifier object.</p>
+<ul>
+<li>Create a method annotated with the <a href="http://docs.spring.io/autorepo/docs/spring-amqp-dist/1.4.1.RELEASE/api/org/springframework/amqp/rabbit/annotation/RabbitListener.html">@RabbitListener</a>
+that prints out the message from the <strong>spring-boot</strong> Queue.
+This method will take a Snippet.</li>
+<li>Use the <code>getTitle</code> and <code>getCreated</code> methods from the snippet to
+print out a message that has the name of the snippet and when it was
+created.</li>
+</ul>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">.</span>domain<span class="token punctuation">.</span>SnippetNotifier<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>RabbitListener<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>SpringApplication<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>autoconfigure<span class="token punctuation">.</span>SpringBootApplication<span class="token punctuation">;</span>
+
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">SnippetConsumerApplication</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">static</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">main</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">String</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">[</span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">]</span></span></span><span class="hljs-function"><span class="hljs-params"> args</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        SpringApplication<span class="token punctuation">.</span><span class="token function">run<span class="token punctuation">(</span></span>SnippetConsumerApplication<span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span> args<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@</span><span class="token function"><span class="hljs-meta">RabbitListener</span><span class="token punctuation">(</span></span>queues <span class="token operator">=</span> <span class="token string"><span class="hljs-string">"spring-boot"</span></span><span class="token punctuation">)</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">receiveMessage</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">SnippetNotifier snippetNotifier</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        System<span class="token punctuation">.</span>out<span class="token punctuation">.</span><span class="token function">println<span class="token punctuation">(</span></span><span class="token string"><span class="hljs-string">"Received &lt;"</span></span> <span class="token operator">+</span> snippetNotifier<span class="token punctuation">.</span><span class="token function">getTitle<span class="token punctuation">(</span></span><span class="token punctuation">)</span> <span class="token operator">+</span> <span class="token string"><span class="hljs-string">" on "</span></span> <span class="token operator">+</span> snippetNotifier<span class="token punctuation">.</span><span class="token function">getCreated<span class="token punctuation">(</span></span><span class="token punctuation">)</span> <span class="token operator">+</span><span class="token string"><span class="hljs-string">"&gt;"</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+</ol>
+<p><strong>PART 2 - Create a Snippet Producer</strong></p>
+<p>Project Information:</p>
+<ul>
+<li><strong>Group</strong>: <code>io.pivotal.workshop</code></li>
+<li><strong>ArtifactId</strong>: <code>snippet-producer</code></li>
+<li><strong>Dependencies</strong>: <code>amqp</code></li>
+</ul>
+<ol>
+<li>
+<p>Create the project using the <a href="http://start.spring.io/">Spring Initializr</a>
+or IntelliJ (<strong><em>File → New → Spring Starter Project</em></strong>).</p>
+</li>
+<li>
+<p>Create or copy a new Snippet class
+(<strong><em>io.pivotal.workshop.domain.Snippet.java</em></strong>)</p>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">.</span>domain<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>Date<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">Snippet</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> String id<span class="token punctuation">;</span>
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> String title<span class="token punctuation">;</span>
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> String code<span class="token punctuation">;</span>
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> Date created<span class="token punctuation">;</span>
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> Date modified<span class="token punctuation">;</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">Snippet</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">String title</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">,</span></span></span><span class="hljs-function"><span class="hljs-params"> String code</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>id <span class="token operator">=</span> java<span class="token punctuation">.</span>util<span class="token punctuation">.</span>UUID<span class="token punctuation">.</span><span class="token function">randomUUID<span class="token punctuation">(</span></span><span class="token punctuation">)</span><span class="token punctuation">.</span><span class="token function">toString<span class="token punctuation">(</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>title <span class="token operator">=</span> title<span class="token punctuation">;</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>code <span class="token operator">=</span> code<span class="token punctuation">;</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>created <span class="token operator">=</span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Date</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>modified <span class="token operator">=</span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Date</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> String </span><span class="token function"><span class="hljs-function"><span class="hljs-title">getId</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> id<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> String </span><span class="token function"><span class="hljs-function"><span class="hljs-title">getTitle</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> title<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> String </span><span class="token function"><span class="hljs-function"><span class="hljs-title">getCode</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> code<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> Date </span><span class="token function"><span class="hljs-function"><span class="hljs-title">getCreated</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> created<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> Date </span><span class="token function"><span class="hljs-function"><span class="hljs-title">getModified</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> modified<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p>Create a new RabbitConfig class
+(<strong><em>io.pivotal.workshop.config.RabbitConfig.java</em></strong>)</p>
+<ul>
+<li>Annotate this class with <a href="http://docs.spring.io/spring-framework/docs/4.0.4.RELEASE/javadoc-api/org/springframework/context/annotation/Configuration.html"><strong>@Configuration</strong></a>.</li>
+<li>Create an <a href="http://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html">@Autowired</a>
+constructor that takes a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/connection/ConnectionFactory.html"><strong>ConnectionFactory</strong></a>
+and stores it into an instance field.</li>
+<li>Create a <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/context/annotation/Bean.html">@Bean</a>
+annotated method named template that returns a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/core/RabbitTemplate.html"><strong>RabbitTemplate</strong></a>.
+<ul>
+<li>In this method instantiate a <strong>new RabbitTemplate</strong> that
+takes the <strong>connectionFactory</strong> that was injected into
+the constructor.</li>
+<li>Use the <strong>rabbitTemplate.setQueue</strong> method to set the Queue
+to the String <strong>spring-boot</strong>.</li>
+<li>Use the <strong>rabbitTemplate.setRoutingKey</strong> method to set the
+routing key to the String <strong>spring-boot</strong>.</li>
+<li>Use the <strong>rabbitTemplate.setMessageConverter</strong> method to set
+the template's message converter to a
+<strong>new Jackson2JsonMessageConverter</strong>.</li>
+<li>Return the newly configured template.</li>
+</ul>
+</li>
+</ul>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">.</span>config<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>connection<span class="token punctuation">.</span>ConnectionFactory<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>core<span class="token punctuation">.</span>RabbitTemplate<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>support<span class="token punctuation">.</span>converter<span class="token punctuation">.</span>Jackson2JsonMessageConverter<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>beans<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Autowired<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>context<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Bean<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>context<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Configuration<span class="token punctuation">;</span>
+
+<span class="hljs-meta">@Configuration</span>
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">RabbitConfig</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> <span class="token keyword"><span class="hljs-keyword">final</span></span> ConnectionFactory connectionFactory<span class="token punctuation">;</span>
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">RabbitConfig</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">ConnectionFactory connectionFactory</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>connectionFactory <span class="token operator">=</span> connectionFactory<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@Bean</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> RabbitTemplate </span><span class="token function"><span class="hljs-function"><span class="hljs-title">template</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        RabbitTemplate rabbitTemplate <span class="token operator">=</span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">RabbitTemplate</span><span class="token punctuation">(</span><span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>connectionFactory<span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rabbitTemplate<span class="token punctuation">.</span><span class="token function">setRoutingKey<span class="token punctuation">(</span></span><span class="token string"><span class="hljs-string">"spring-boot"</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        rabbitTemplate<span class="token punctuation">.</span><span class="token function">setMessageConverter<span class="token punctuation">(</span></span><span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Jackson2JsonMessageConverter</span><span class="token punctuation">(</span><span class="token punctuation">)</span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        <span class="token keyword"><span class="hljs-keyword">return</span></span> rabbitTemplate<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p>Modify the main application class,
+<strong><em>SnippetProducerApplication.java</em></strong>, to send a Snippet.</p>
+<ul>
+<li>Annotate the application with <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/annotation/EnableScheduling.html">@EnableScheduling</a>
+to allow your schedule to run.</li>
+<li>Create an <a href="http://docs.spring.io/spring-framework/docs/current/javadoc-api/org/springframework/beans/factory/annotation/Autowired.html">@Autowired</a>
+constructor that takes a <a href="http://docs.spring.io/spring-amqp/docs/current/api/org/springframework/amqp/rabbit/core/RabbitTemplate.html"><strong>RabbitTemplate</strong></a>
+and stores it into an instance field.</li>
+<li>Use the <a href="http://docs.spring.io/spring/docs/current/javadoc-api/org/springframework/scheduling/annotation/Scheduled.html">@Scheduled</a>
+annotation to call a method that
+<ul>
+<li>Sends a new Snippet with the title set to
+<strong>JavaScript: Alert</strong> and the code set to
+<strong>alert('Hi there!')</strong>.</li>
+<li>Uses the <strong>convertAndSend</strong> method on the RabbitTemplate we
+just configured.</li>
+<li>Sends to the <strong>spring-boot</strong> queue every second.</li>
+</ul>
+</li>
+</ul>
+<pre class=" language-java"><code class="language-java hljs"><span class="token keyword"><span class="hljs-keyword">package</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">;</span>
+
+<span class="token keyword"><span class="hljs-keyword">import</span></span> io<span class="token punctuation">.</span>pivotal<span class="token punctuation">.</span>workshop<span class="token punctuation">.</span>domain<span class="token punctuation">.</span>Snippet<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>amqp<span class="token punctuation">.</span>rabbit<span class="token punctuation">.</span>core<span class="token punctuation">.</span>RabbitTemplate<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>beans<span class="token punctuation">.</span>factory<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Autowired<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>SpringApplication<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>boot<span class="token punctuation">.</span>autoconfigure<span class="token punctuation">.</span>SpringBootApplication<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>scheduling<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>EnableScheduling<span class="token punctuation">;</span>
+<span class="token keyword"><span class="hljs-keyword">import</span></span> org<span class="token punctuation">.</span>springframework<span class="token punctuation">.</span>scheduling<span class="token punctuation">.</span>annotation<span class="token punctuation">.</span>Scheduled<span class="token punctuation">;</span>
+
+<span class="hljs-meta">@SpringBootApplication</span>
+<span class="hljs-meta">@EnableScheduling</span>
+<span class="token keyword"><span class="hljs-keyword">public</span></span> <span class="token keyword"><span class="hljs-class"><span class="hljs-keyword">class</span></span></span><span class="hljs-class"> </span><span class="token class-name"><span class="hljs-class"><span class="hljs-title">SnippetProducerApplication</span></span></span><span class="hljs-class"> </span><span class="token punctuation">{</span>
+
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">static</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">main</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">String</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">[</span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">]</span></span></span><span class="hljs-function"><span class="hljs-params"> args</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        SpringApplication<span class="token punctuation">.</span><span class="token function">run<span class="token punctuation">(</span></span>SnippetProducerApplication<span class="token punctuation">.</span><span class="token keyword">class</span><span class="token punctuation">,</span> args<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="token keyword"><span class="hljs-keyword">private</span></span> <span class="token keyword"><span class="hljs-keyword">final</span></span> RabbitTemplate template<span class="token punctuation">;</span>
+
+    <span class="hljs-meta">@Autowired</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">SnippetProducerApplication</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="hljs-function"><span class="hljs-params">RabbitTemplate template</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="token punctuation">{</span>
+        <span class="token keyword"><span class="hljs-keyword">this</span></span><span class="token punctuation">.</span>template <span class="token operator">=</span> template<span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+
+    <span class="hljs-meta">@</span><span class="token function"><span class="hljs-meta">Scheduled</span><span class="token punctuation">(</span></span>fixedDelay <span class="token operator">=</span> <span class="token number"><span class="hljs-number">1000</span></span><span class="token punctuation">)</span>
+    <span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">public</span></span></span><span class="hljs-function"> </span><span class="token keyword"><span class="hljs-function"><span class="hljs-keyword">void</span></span></span><span class="hljs-function"> </span><span class="token function"><span class="hljs-function"><span class="hljs-title">sender</span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">(</span></span></span></span><span class="token punctuation"><span class="hljs-function"><span class="hljs-params">)</span></span></span><span class="hljs-function"> </span><span class="token punctuation">{</span>
+        Snippet snippet <span class="token operator">=</span> <span class="token keyword"><span class="hljs-keyword">new</span></span> <span class="token class-name">Snippet</span><span class="token punctuation">(</span><span class="token string"><span class="hljs-string">"JavaScript: Alert"</span></span><span class="token punctuation">,</span><span class="token string"><span class="hljs-string">"alert('Hi there!');"</span></span><span class="token punctuation">)</span><span class="token punctuation">;</span>
+        template<span class="token punctuation">.</span><span class="token function">convertAndSend<span class="token punctuation">(</span></span>snippet<span class="token punctuation">)</span><span class="token punctuation">;</span>
+    <span class="token punctuation">}</span>
+<span class="token punctuation">}</span>
+</code></pre>
+</li>
+<li>
+<p>Start your consumer application by running <code>./gradlew bootRun</code>.</p>
+</li>
+<li>
+<p>In a new Terminal window start your producer application by running <code>./gradlew bootRun</code>.</p>
+</li>
+<li>
+<p>You should see something like <strong>JavaScript: Alert on XXXXXXXXXX</strong> in
+the logs for your consumer.</p>
+</li>
+</ol>
+<blockquote>
+<p>You have created a producer and consumer that use
+jackson to serialize and deserialize a Snippet object over RabbitMQ.</p>
+</blockquote>
+             </div>
+            <div class="col-sm-6">
+<nav id="sidebar" class="panel panel-basic-alt hidden-xs">
+    <div class="panel-header panel-title-alt">
+        <a href="https://cognizant-pal-v1.cfapps.io/index.html">Return to Cumulus Education Lab</a>
+    </div>
+    <div class="panel-body">
+        <a href="https://cognizant-pal-v1.cfapps.io/spring-boot-developer/messaging/index.html#">Back to top</a>
+
+<ul>
+        <li>
+        <a href="https://cognizant-pal-v1.cfapps.io/spring-boot-developer/messaging/index.html#requirements">Requirements</a>
+
+        </li>
+        <li>
+        <a href="https://cognizant-pal-v1.cfapps.io/spring-boot-developer/messaging/index.html#purpose-of-this-lab">Purpose of this lab</a>
+
+        </li>
+        <li>
+        <a href="https://cognizant-pal-v1.cfapps.io/spring-boot-developer/messaging/index.html#install-rabbitmq">Install RabbitMQ</a>
+
+        </li>
+        <li>
+        <a href="https://cognizant-pal-v1.cfapps.io/spring-boot-developer/messaging/index.html#create-a-consumer-and-producer-application-that-use-rabbitmq">Create a Consumer and Producer application that use RabbitMQ</a>
+
+        </li>
+        <li>
+        <a href="https://cognizant-pal-v1.cfapps.io/spring-boot-developer/messaging/index.html#create-a-consumer-and-producer-application-that-can-serialize-and-deserialize-messages">Create a Consumer and Producer application that can serialize and deserialize messages</a>
+
+        </li>
+</ul>
+    </div>
+</nav>
+            </div>
+        </div>
+    </div>
+</main>
+
+<footer>
+    <a href="https://pivotal.io/" class="type-neutral-11">CONFIDENTIAL - © Copyright 2017 Pivotal Software, Inc. All Rights Reserved.</a>
+    <div class="type-neutral-6">course version: 1.5.3</div>
+</footer>
+
+
+<script src="./Cumulus Education Lab - Messaging_files/highlight.pack.js"></script>
+<script>hljs.initHighlightingOnLoad();</script>
+<script src="./Cumulus Education Lab - Messaging_files/ie10-viewport-bug-workaround.js"></script>
+<script src="./Cumulus Education Lab - Messaging_files/jquery-3.1.1.min.js"></script>
+<script src="./Cumulus Education Lab - Messaging_files/pivotal-ui.min.js"></script>
+<script src="./Cumulus Education Lab - Messaging_files/custom.js"></script>
+
+
+
+
+
+</body></html>

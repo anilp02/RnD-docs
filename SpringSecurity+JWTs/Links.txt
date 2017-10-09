@@ -10,4 +10,6 @@ https://stormpath.com/blog/jwt-java-create-verify
 
 https://stormpath.com/blog/service-to-service
 
+http://www.springboottutorial.com/securing-rest-services-with-spring-boot-starter-security
+
 https://auth0.com/docs/jwt

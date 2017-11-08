@@ -11,7 +11,7 @@ edit proxy in M2_HOME/conf/settings.xml with contents
       <id>540010</id>
       <active>true</active>
       <protocol>http</protocol>
-      <username>540010</username>
+      <username>userID</username>
       <password>password</password>
       <host>proxy.cognizant.com</host>
       <port>6050</port>
@@ -24,12 +24,12 @@ create a file gradle.properties in GRADLE_USER_HOME with contents
 
 systemProp.http.proxyHost=proxy.cognizant.com
 systemProp.http.proxyPort=6050
-systemProp.http.proxyUser=540010
+systemProp.http.proxyUser=userID
 systemProp.http.proxyPassword=password
 systemProp.http.nonProxyHosts=*.nonproxyrepos.com|localhost
 systemProp.https.proxyHost=proxy.cognizant.com
 systemProp.https.proxyPort=6050
-systemProp.https.proxyUser=540010
+systemProp.https.proxyUser=userID
 systemProp.https.proxyPassword=password
 systemProp.https.nonProxyHosts=*.nonproxyrepos.com|localhost
 

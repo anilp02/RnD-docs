@@ -1,0 +1,42 @@
+Download STS, Maven, Gradle
+set JAVA_HOME, M2_HOME, GRADLE_USER_HOME and append *%*/bin to env path
+Install maven plugin from eclipse marketplace "Maven Integration for Eclipse" : optional as mvn comes by default in sts
+Install gradle plugin from eclipse marketplace "Buildship Gradle Integration"
+
+Setting up proxy to bypass firewall for M2_HOME:
+edit proxy in M2_HOME/conf/settings.xml with contents
+
+<proxies>
+    <proxy>
+      <id>540010</id>
+      <active>true</active>
+      <protocol>http</protocol>
+      <username>540010</username>
+      <password>password</password>
+      <host>proxy.cognizant.com</host>
+      <port>6050</port>
+      <nonProxyHosts>local.net|some.host.com</nonProxyHosts>
+    </proxy>
+</proxies>
+
+Setting up proxy to bypass firewall for GRADLE_USER_HOME:
+create a file gradle.properties in GRADLE_USER_HOME with contents
+
+systemProp.http.proxyHost=proxy.cognizant.com
+systemProp.http.proxyPort=6050
+systemProp.http.proxyUser=540010
+systemProp.http.proxyPassword=password
+systemProp.http.nonProxyHosts=*.nonproxyrepos.com|localhost
+systemProp.https.proxyHost=proxy.cognizant.com
+systemProp.https.proxyPort=6050
+systemProp.https.proxyUser=540010
+systemProp.https.proxyPassword=password
+systemProp.https.nonProxyHosts=*.nonproxyrepos.com|localhost
+
+Setting up proxy in STS: Not required as it takes system proxy. Incase needed, 
+go to window/preferences/General/Network Connections and set manually.
+For maven plugin, put settings.xml in .m2 folder with above contents.
+
+Download SpringBoot cli
+Set it to SPRING_HOME and append *%*/bin to env path
+Execute spring install command to install Spring Cloud Cli.

@@ -40,3 +40,7 @@ For maven plugin, put settings.xml in .m2 folder with above contents.
 Download SpringBoot cli
 Set it to SPRING_HOME and append *%*/bin to env path
 Execute spring install command to install Spring Cloud Cli.
+
+Install CF CLI and set proxy as:
+set HTTP_PROXY=http://proxy_userid:proxy_password@proxy_ip:proxy_port
+Also create a key with HTTP_PROXY and value as http://proxy_userid:proxy_password@proxy_ip:proxy_port in env variables

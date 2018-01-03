@@ -13,3 +13,5 @@ https://stackoverflow.com/questions/35085617/how-to-configure-hystrix-annotation
 https://github.com/Netflix
 
 https://github.com/Netflix/archaius/wiki/Getting-Started
+
+https://github.com/Netflix/Hystrix/wiki/Configuration

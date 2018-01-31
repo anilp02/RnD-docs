@@ -19,3 +19,5 @@ https://github.com/Netflix/Hystrix/wiki/Configuration
 https://github.com/spring-cloud/spring-cloud-netflix/blob/master/docs/src/main/asciidoc/spring-cloud-netflix.adoc
 
 https://github.com/spring-cloud/spring-cloud-netflix/issues/1521
+
+http://cloud.spring.io/spring-cloud-static/Edgware.SR1/single/spring-cloud.html#hystrix-fallbacks-for-routes

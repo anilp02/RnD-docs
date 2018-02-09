@@ -1,0 +1,38 @@
+package com.company.ccspfeedback.exception;
+
+/**
+ * @author 540010 Custom exception class to handle validation exceptions in
+ *         controllers
+ */
+@SuppressWarnings("serial")
+public class CcspFeedbackValidationException extends Exception {
+
+	private String errorCode;
+
+	private String errorMessage;
+
+	public String getErrorCode() {
+		return errorCode;
+	}
+
+	public void setErrorCode(String errorCode) {
+		this.errorCode = errorCode;
+	}
+
+	public String getErrorMessage() {
+		return errorMessage;
+	}
+
+	public CcspFeedbackValidationException(String errorCode, String errorMessage) {
+		super();
+		this.errorCode = errorCode;
+		this.errorMessage = errorMessage;
+	}
+
+	@Override
+	public String toString() {
+		return "CcspFeedbackCustomException [errorCode=" + errorCode + ", errorMessage=" + errorMessage
+				+ ", getErrorCode()=" + getErrorCode() + ", getErrorMessage()=" + getErrorMessage() + "]";
+	}
+
+}

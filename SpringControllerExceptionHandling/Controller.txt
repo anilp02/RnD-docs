@@ -1,0 +1,198 @@
+package com.company.ccspfeedback.controllers;
+
+import java.util.ArrayList;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import javax.validation.Valid;
+import javax.validation.constraints.NotNull;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.mongodb.core.MongoTemplate;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.util.StringUtils;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
+
+import com.company.ccspfeedback.config.CcspFeedbackConfig;
+import com.company.ccspfeedback.domains.CcspFeedback;
+import com.company.ccspfeedback.domains.CcspFeedbackComments;
+import com.company.ccspfeedback.domains.schema.FeedbackRequest;
+import com.company.ccspfeedback.domains.schema.FeedbackResponse;
+import com.company.ccspfeedback.exception.CcspFeedbackNotFoundException;
+import com.company.ccspfeedback.exception.CcspFeedbackValidationException;
+import com.company.ccspfeedback.service.CcspFeedbackService;
+import com.company.ccspfeedback.utils.CcspFeedbackConstants;
+
+import io.swagger.annotations.Api;
+import io.swagger.annotations.ApiOperation;
+import io.swagger.annotations.ApiResponse;
+import io.swagger.annotations.ApiResponses;
+import io.swagger.annotations.Authorization;
+import io.swagger.annotations.AuthorizationScope;
+
+/**
+ * @author 540010 Controller class to expose APIs
+ */
+@RestController
+@Api
+public class CcspFeedbackController {
+
+	private final CcspFeedbackConfig config;
+
+	@Autowired
+	public CcspFeedbackController(CcspFeedbackConfig config) {
+		this.config = config;
+	}
+
+	@Autowired
+	private CcspFeedbackService ccspFeedbackService;
+	
+	@Autowired
+	private MongoTemplate mongoTemplate;
+	
+	@PostMapping("/comment")
+	public ResponseEntity<FeedbackResponse> save(@Valid @RequestBody FeedbackRequest feedbackRequest)
+			throws CcspFeedbackValidationException {
+
+		CcspFeedbackComments ccspFeedbackComments = new CcspFeedbackComments(feedbackRequest.getRating(),
+				feedbackRequest.getCustomerName(), feedbackRequest.getComments(), new Date());
+
+		List<CcspFeedbackComments> ccspFeedbackCommentsList = new ArrayList<>();
+		ccspFeedbackCommentsList.add(ccspFeedbackComments);
+
+		CcspFeedback cf = new CcspFeedback(feedbackRequest.getAppName(), ccspFeedbackCommentsList);
+
+		
+
+		return new ResponseEntity<>(feedbackResponse, HttpStatus.OK);
+	}
+
+	/**
+	 * POST method to take user input and save in db
+	 * 
+	 * @param ccspFeedback
+	 * @return ResponseEntity
+	 * @throws CcspFeedbackValidationException
+	 */
+	@ApiOperation(value = "Post a comment", response = FeedbackResponse.class, produces = MediaType.APPLICATION_JSON_VALUE, authorizations = {
+			@Authorization(value = "Authorization", scopes = {
+					@AuthorizationScope(scope = "ccsp:microservice:loginrequest", description = "Test oauth") }) })
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully commented", response = FeedbackResponse.class),
+			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
+			@ApiResponse(code = 404, message = "No data found"),
+			@ApiResponse(code = 500, message = "Internal server error") })
+	@PostMapping("/comment")
+	public ResponseEntity<FeedbackResponse> postFeedback(@Valid @RequestBody FeedbackRequest feedbackRequest)
+			throws CcspFeedbackValidationException {
+
+		FeedbackResponse feedbackResponse;
+
+		if (!StringUtils.hasText(feedbackRequest.getAppName())) {
+			throw new CcspFeedbackValidationException(CcspFeedbackConstants.VALIDATION_EXCEPTION_CODE,
+					CcspFeedbackConstants.VALIDATION_EXCEPTION_APPNAME);
+		} else if (!StringUtils.hasText(feedbackRequest.getRating()))
+			throw new CcspFeedbackValidationException(CcspFeedbackConstants.VALIDATION_EXCEPTION_CODE,
+					CcspFeedbackConstants.VALIDATION_EXCEPTION_RATING);
+		else {
+			feedbackResponse = ccspFeedbackService.postFeedback(feedbackRequest);
+		}
+
+		return new ResponseEntity<>(feedbackResponse, HttpStatus.OK);
+	}
+
+	/**
+	 * GET method to fetch data from db as per appName
+	 * 
+	 * @param appName
+	 * @return ResponseEntity
+	 * @throws CcspFeedbackValidationException
+	 * @throws CcspFeedbackNotFoundException
+	 */
+	@ApiOperation(value = "Get comments of an app", response = FeedbackResponse.class, produces = MediaType.APPLICATION_JSON_VALUE, authorizations = {
+			@Authorization(value = "Authorization", scopes = {
+					@AuthorizationScope(scope = "ccsp:microservice:loginrequest", description = "Test oauth") }) })
+	@ApiResponses(value = {
+			@ApiResponse(code = 200, message = "Successfully fetched", response = FeedbackResponse.class),
+			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
+			@ApiResponse(code = 404, message = "No data dound"),
+			@ApiResponse(code = 500, message = "Internal server error") })
+	@GetMapping("/comments")
+	public ResponseEntity<FeedbackResponse> getFeedbacks(
+			@NotNull @RequestParam(value = "appName", required = true) String appName)
+			throws CcspFeedbackValidationException, CcspFeedbackNotFoundException {
+
+		FeedbackResponse feedbackResponse;
+
+		if (!StringUtils.hasText(appName)) {
+			throw new CcspFeedbackValidationException(CcspFeedbackConstants.VALIDATION_EXCEPTION_CODE,
+					CcspFeedbackConstants.VALIDATION_EXCEPTION_APPNAME);
+		} else {
+			feedbackResponse = ccspFeedbackService.getFeedbacks(appName);
+		}
+
+		return new ResponseEntity<>(feedbackResponse, HttpStatus.OK);
+	}
+
+	/**
+	 * DELETE method to remove a comment from db
+	 * 
+	 * @param appName
+	 * @param customerName
+	 * @return
+	 * @throws CcspFeedbackValidationException
+	 * @throws CcspFeedbackNotFoundException
+	 */
+	@ApiOperation(value = "Delete a comment", response = ResponseEntity.class, produces = MediaType.APPLICATION_JSON_VALUE, authorizations = {
+			@Authorization(value = "Authorization", scopes = {
+					@AuthorizationScope(scope = "ccsp:microservice:loginrequest", description = "Test oauth") }) })
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Successfully deleted", response = ResponseEntity.class),
+			@ApiResponse(code = 400, message = "Bad request"), @ApiResponse(code = 401, message = "Unauthorized"),
+			@ApiResponse(code = 404, message = "No data found"),
+			@ApiResponse(code = 500, message = "Internal server error") })
+	@DeleteMapping("/comments")
+	public ResponseEntity<String> deleteFeedbacks(
+			@NotNull @RequestParam(value = "appName", required = true) String appName,
+			@NotNull @RequestParam(value = "customerName", required = true) String customerName)
+			throws CcspFeedbackValidationException, CcspFeedbackNotFoundException {
+
+		if (!StringUtils.hasText(appName)) {
+			throw new CcspFeedbackValidationException(CcspFeedbackConstants.VALIDATION_EXCEPTION_CODE,
+					CcspFeedbackConstants.VALIDATION_EXCEPTION_APPNAME);
+		} else if (!StringUtils.hasText(customerName)) {
+			throw new CcspFeedbackValidationException(CcspFeedbackConstants.VALIDATION_EXCEPTION_CODE,
+					CcspFeedbackConstants.VALIDATION_EXCEPTION_CUSTOMERNAME);
+		} else {
+			ccspFeedbackService.deleteFeedbacks(appName, customerName);
+		}
+
+		return new ResponseEntity<>(HttpStatus.OK);
+	}
+
+	@ApiOperation(value = "Service information", response = HashMap.class)
+	@ApiResponses(value = { @ApiResponse(code = 200, message = "Service information", response = HashMap.class),
+			@ApiResponse(code = 401, message = "Unauthorized"),
+			@ApiResponse(code = 500, message = "Internal server error") })
+	@RequestMapping(value = "/", produces = "application/json", method = RequestMethod.GET)
+	public Map<String, String> index() {
+		return new HashMap<String, String>() {
+			private static final long serialVersionUID = -7006213790932083398L;
+			{
+				put("message", "yo Xsp " + config.getServiceName());
+				put("date", new java.util.Date().toString());
+			}
+		};
+	}
+
+}

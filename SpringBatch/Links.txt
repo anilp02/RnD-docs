@@ -1,0 +1,9 @@
+https://docs.spring.io/spring-batch/trunk/reference/html/spring-batch-intro.html
+
+https://projects.spring.io/spring-batch/
+
+https://spring.io/guides/gs/batch-processing/
+
+https://github.com/spring-guides/gs-batch-processing
+
+https://stackoverflow.com/questions/41361883/why-spring-boot-batch-job-is-running-just-one-time

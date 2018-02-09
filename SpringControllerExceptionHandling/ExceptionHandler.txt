@@ -1,0 +1,137 @@
+package com.company.ccspfeedback.utils;
+
+import java.util.ArrayList;
+import java.util.List;
+
+import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
+
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.validation.BindingResult;
+import org.springframework.validation.FieldError;
+import org.springframework.validation.ObjectError;
+import org.springframework.web.bind.MethodArgumentNotValidException;
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.ResponseBody;
+import org.springframework.web.bind.annotation.ResponseStatus;
+import org.springframework.web.bind.annotation.RestControllerAdvice;
+
+import com.company.ccspfeedback.domains.schema.Error;
+import com.company.ccspfeedback.domains.schema.FeedbackResponse;
+import com.company.ccspfeedback.exception.CcspFeedbackNotFoundException;
+import com.company.ccspfeedback.exception.CcspFeedbackRoutingException;
+import com.company.ccspfeedback.exception.CcspFeedbackValidationException;
+
+/**
+ * @author 540010 ExceptionHandler class to handle exceptions
+ *
+ */
+@RestControllerAdvice
+public class CcspFeedbackControllerExceptionHandler {
+
+	/**
+	 * Throws error if any input request mandate field has null value
+	 * 
+	 * @param exception
+	 * @return
+	 */
+	@ExceptionHandler(MethodArgumentNotValidException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	@Produces(MediaType.APPLICATION_JSON)
+	public ResponseEntity<FeedbackResponse> feedbackInvalidRequest(final MethodArgumentNotValidException exception) {
+
+		StringBuilder builder = new StringBuilder();
+
+		builder.append("Given input is not valid");
+		if (null != exception && null != exception.getBindingResult()) {
+			BindingResult result = exception.getBindingResult();
+			if (null != result.getAllErrors()) {
+				for (ObjectError error : result.getAllErrors()) {
+					builder.append(" - " + error.getObjectName());
+					if (error instanceof FieldError) {
+						builder.append(" " + ((FieldError) error).getField());
+					}
+					builder.append(" : " + error.getDefaultMessage());
+				}
+			}
+
+		}
+
+		return errorResponse(new FeedbackResponse(), CcspFeedbackConstants.VALIDATION_EXCEPTION_CODE,
+				builder.toString(), HttpStatus.BAD_REQUEST);
+	}
+
+	/**
+	 * Throws error if any input request mandate field has empty value
+	 * 
+	 * @param exception
+	 * @return
+	 */
+	@ExceptionHandler(CcspFeedbackValidationException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	@Produces(MediaType.APPLICATION_JSON)
+	public ResponseEntity<FeedbackResponse> feedbackInvalidRequest(final CcspFeedbackValidationException exception) {
+
+		return errorResponse(new FeedbackResponse(), exception.getErrorCode(), exception.getErrorMessage(),
+				HttpStatus.BAD_REQUEST);
+	}
+
+	/**
+	 * Throws error if any there is no data in db for a specific appName
+	 * 
+	 * @param exception
+	 * @return
+	 */
+	@ExceptionHandler(CcspFeedbackNotFoundException.class)
+	@ResponseStatus(value = HttpStatus.NOT_FOUND)
+	@ResponseBody
+	@Produces(MediaType.APPLICATION_JSON)
+	public ResponseEntity<FeedbackResponse> feedbackNotFound(final CcspFeedbackNotFoundException exception) {
+
+		return errorResponse(new FeedbackResponse(), exception.getErrorCode(), exception.getErrorMessage(),
+				HttpStatus.NOT_FOUND);
+	}
+
+	/**
+	 * Throws error if the client is other than API-Gateway
+	 * 
+	 * @param exception
+	 * @return
+	 */
+	@ExceptionHandler(CcspFeedbackRoutingException.class)
+	@ResponseStatus(value = HttpStatus.BAD_REQUEST)
+	@ResponseBody
+	@Produces(MediaType.APPLICATION_JSON)
+	public ResponseEntity<FeedbackResponse> feedbackInvalidRroute(final CcspFeedbackRoutingException exception) {
+
+		return errorResponse(new FeedbackResponse(), exception.getErrorCode(), exception.getErrorMessage(),
+				HttpStatus.BAD_REQUEST);
+	}
+
+	/**
+	 * produces JSON error response
+	 * 
+	 * @param FeedbackResponse
+	 * @param code
+	 * @param message
+	 * @param badRequest
+	 * @return
+	 */
+	private ResponseEntity<FeedbackResponse> errorResponse(FeedbackResponse FeedbackResponse, String code,
+			String message, HttpStatus badRequest) {
+		Error error = new Error();
+		error.setErrorCode(code);
+		error.setErrorMessage(message);
+
+		List<Error> errors = new ArrayList<>();
+		errors.add(error);
+
+		FeedbackResponse.setErrors(errors);
+
+		return new ResponseEntity<>(FeedbackResponse, badRequest);
+	}
+
+}

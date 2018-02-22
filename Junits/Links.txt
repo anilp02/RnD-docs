@@ -1,1 +1,5 @@
 http://www.springboottutorial.com/unit-testing-for-spring-boot-rest-services
+
+http://www.baeldung.com/spring-boot-testing
+
+https://spring.io/blog/2016/04/15/testing-improvements-in-spring-boot-1-4

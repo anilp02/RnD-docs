@@ -1,5 +1,7 @@
 http://cloud.spring.io/spring-cloud-netflix/spring-cloud-netflix.html
 
+https://cloud.spring.io/spring-cloud-config/single/spring-cloud-config.html
+
 https://docs.pivotal.io/spring-cloud-services/1-4/common/
 
 https://spring.io/blog/2015/07/14/microservices-with-spring

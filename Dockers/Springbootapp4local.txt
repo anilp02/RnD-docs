@@ -1,0 +1,31 @@
+create a Dockerfile : https://thepracticaldeveloper.com/2017/12/11/dockerize-spring-boot/#Dockerize_a_Spring_Boot_application
+
+https://stackoverflow.com/questions/42866013/docker-toolbox-localhost-not-working
+
+https://ropenscilabs.github.io/r-docker-tutorial/04-Dockerhub.html
+
+https://www.youtube.com/watch?v=3n_pqQcih5c
+
+https://www.youtube.com/watch?v=FlSup_eelYE
+
+
+
+go to app root folder from docker cli
+execute command <docker image build -t dockerapp:new <app root folder>> OR <docker build -t dockerapp .>
+
+docker images : list of all docker images
+docker rmi imageID : delete an image
+docker ps -a -q : list of all containers
+docker rm containersID	 : delete a container
+
+docker run -p 8080:8080 dockerapp 
+
+docker login
+
+docker pull pp010/dockerapp
+
+docker tag dockerapp pp010/dockerapp : https://hackernoon.com/publish-your-docker-image-to-docker-hub-10b826793faf
+
+docker push pp010/dockerapp
+
+docker run -p 8181:8080 pp010/dockerapp

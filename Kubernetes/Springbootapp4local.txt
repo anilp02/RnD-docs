@@ -1,0 +1,15 @@
+https://itnext.io/migrating-a-spring-boot-service-to-kubernetes-in-5-steps-7c1702da81b6
+
+https://www.brosinski.com/post/deploying-spring-boot-app-kubernetes/
+
+https://www.oreilly.com/ideas/how-to-manage-docker-containers-in-kubernetes-with-java
+
+https://kubernetes-v1-4.github.io/docs/user-guide/simple-nginx/
+
+Steps:
+
+create a deployment file for container
+
+create a service file for the app
+
+expose the service

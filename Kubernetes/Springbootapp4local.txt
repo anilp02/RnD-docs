@@ -6,6 +6,19 @@ https://www.oreilly.com/ideas/how-to-manage-docker-containers-in-kubernetes-with
 
 https://kubernetes-v1-4.github.io/docs/user-guide/simple-nginx/
 
+https://blog.giantswarm.io/understanding-basic-kubernetes-concepts-i-introduction-to-pods-labels-replicas/
+https://blog.giantswarm.io/understanding-basic-kubernetes-concepts-using-deployments-manage-services-declaratively/
+https://blog.giantswarm.io/basic-kubernetes-concepts-iii-services-give-abstraction/
+https://blog.giantswarm.io/understanding-basic-kubernetes-concepts-iv-secrets-and-configmaps/
+https://blog.giantswarm.io/understanding-basic-kubernetes-concepts-v-daemon-sets-and-jobs/
+
+https://jaxenter.com/spring-boot-tutorial-microservices-kubernetes-part-one-135490.html
+https://jaxenter.com/spring-boot-tutorial-microservices-kubernetes-part-2-135518.html
+
+https://fabric8.io/
+
+http://blog.christianposta.com/microservices/netflix-oss-or-kubernetes-how-about-both/
+
 Steps:
 
 create a deployment file for container
@@ -13,3 +26,18 @@ create a deployment file for container
 create a service file for the app
 
 expose the service
+
+kubectl get deployments | kubectl delete deployment kubernetes
+
+kubectl get services | kubectl delete service kubernetes
+
+kubectl get pods | kubectl delete pods kubernetes
+
+kubectl create -f Deployment.yml
+kubectl get deployment
+kubectl describe deployment weather-app
+kubectl expose deployment weather-app --type="LoadBalancer"
+kubectl get pods -l app=weather-app
+kubectl get service weather-app
+
+

@@ -11,10 +11,10 @@ https://www.youtube.com/watch?v=FlSup_eelYE
 
 
 go to app root folder from docker cli
-execute command <docker image build -t dockerapp:new <app root folder>> OR <docker build -t dockerapp .>
+execute command <docker image build -t dockerapp:new <app root folder>> OR <docker build -t dockerapp:tag .>
 
 docker images : list of all docker images
-docker rmi imageID : delete an image
+docker rmi imageID/name : delete an image
 docker ps -a -q : list of all containers
 docker rm containersID	 : delete a container
 

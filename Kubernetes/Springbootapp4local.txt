@@ -39,5 +39,6 @@ kubectl describe deployment weather-app
 kubectl expose deployment weather-app --type="LoadBalancer"
 kubectl get pods -l app=weather-app
 kubectl get service weather-app
+kubectl --namespace=namesapce get pods -o wide
 
 

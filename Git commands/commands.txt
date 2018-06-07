@@ -1,0 +1,31 @@
+git config --global user.name "Padarabinda Panigrahi"
+
+git config --global user.email "<?>.com"
+
+git clone https://<?>.git
+
+ 
+
+cd existing-project
+
+git init
+
+git add –all
+
+git commit -m "Initial Commit by PP"
+
+git remote add origin https://<?>.git
+
+git push -u origin master
+
+ 
+
+git checkout -b develop
+
+git push -u origin develop
+
+ 
+
+https://confluence.atlassian.com/bitbucket/branching-a-repository-223217999.html
+
+https://confluence.atlassian.com/bitbucketserver/basic-git-commands-776639767.html
